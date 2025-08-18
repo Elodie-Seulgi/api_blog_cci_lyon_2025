@@ -1,0 +1,5 @@
+App\Entity\User:
+  user_unique_username:
+    username: "JohnDoe"
+    password: password
+    
