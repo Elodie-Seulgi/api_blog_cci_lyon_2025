@@ -3,19 +3,11 @@
 namespace App\Dto\Article;
 
 use App\Dto\Interfaces\ArticleRequestInterface;
-use App\Entity\Article;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[UniqueEntity(
-    fields: ['title'],
-    entityClass: Article::class,
-    message: 'Ce titre est déjà utilisé par un autre article'
-)]
-class CreateArticleDto implements ArticleRequestInterface
+class UpdateArticleDto implements ArticleRequestInterface
 {
     public function __construct(
-        #[Assert\NotBlank(message: 'Le titre est obligatoire')]
         #[Assert\Length(
             min: 3,
             max: 255,
@@ -24,14 +16,12 @@ class CreateArticleDto implements ArticleRequestInterface
         )]
         private readonly ?string $title = null,
 
-        #[Assert\NotBlank(message: 'Le contenu est obligatoire')]
         #[Assert\Length(
             min: 10,
             minMessage: 'Le contenu doit contenir au moins {{ limit }} caractères',
         )]
         private readonly ?string $content = null,
 
-        #[Assert\NotBlank(message: 'Le contenu court est obligatoire')]
         #[Assert\Length(
             min: 5,
             max: 255,
@@ -42,7 +32,6 @@ class CreateArticleDto implements ArticleRequestInterface
 
         private readonly bool $enabled = false,
 
-        #[Assert\NotBlank(message: 'L\'utilisateur est obligatoire')]
         #[Assert\Positive(message: 'L\'utilisateur doit être un identifiant valide')]
         private readonly ?int $user = null,
     ) {
@@ -73,5 +62,3 @@ class CreateArticleDto implements ArticleRequestInterface
         return $this->user;
     }
 }
-
-

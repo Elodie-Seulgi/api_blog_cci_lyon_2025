@@ -2,13 +2,13 @@
 
 namespace App\Tests\Unit\Entity;
 
-use App\Entity\User;
 use App\Entity\Article;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use App\Entity\User;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\ORM\EntityManagerInterface;
+use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Liip\TestFixturesBundle\Services\DatabaseTools\AbstractDatabaseTool;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class ArticleEntityTest extends KernelTestCase
 {
@@ -74,25 +74,28 @@ class ArticleEntityTest extends KernelTestCase
         $this->assertEquals($expected, $article->getCreatedAt()->format('Y-m-d H:i'));
     }
 
-    public function testGenerationCreatedAtOnPersistWithExistingCreatedAt(): void // This test ensures that if createdAt is already set, it does not change
+    public function testGenerationCreatedAtOnPersistWithExistingCreatedAt(): void
     {
-        $createdAt = new \DateTimeImmutable('2023-01-01 12:00');
+        $createdAt = new \DateTimeImmutable('2025-01-01 12:00');
 
         $article = $this->getArticle()
             ->setCreatedAt($createdAt);
 
         $this->persistData($article, $article->getUser());
 
-        $this->assertEquals($createdAt->format('Y-m-d H:i'), $article->getCreatedAt()->format('Y-m-d H:i'));
+        $this->assertEquals(
+            $createdAt->format('Y-m-d H:i'),
+            $article->getCreatedAt()->format('Y-m-d H:i')
+        );
     }
 
-    public function testGenerationUpdatedAtOnUpdate(): void // pour cela, on crée un article et on le met à jour pour vérifier que updatedAt est bien mis à jour
+    public function testGenerationUpdatedAtOnUpdate(): void
     {
         $article = $this->getArticle();
 
         $this->persistData($article, $article->getUser());
 
-        $this->assertNull($article->getUpdatedAt()); // première validation intermédiaire
+        $this->assertNull($article->getUpdatedAt());
 
         $article
             ->setTitle('Nouveau titre');
@@ -111,7 +114,6 @@ class ArticleEntityTest extends KernelTestCase
         $this->persistData($article, $article->getUser());
 
         $updatedAt = new \DateTimeImmutable('2025-01-01 12:00');
-
         $article
             ->setUpdatedAt($updatedAt);
 
@@ -120,21 +122,19 @@ class ArticleEntityTest extends KernelTestCase
         $this->assertNotEquals($updatedAt, $article->getUpdatedAt());
     }
 
-    public function testExceptionWhenNonUniqueTitle(): void
+    public function testExceptionWhenNoUniqueTitle(): void
     {
         $this->databaseTool->loadAliceFixture(
             [
                 \dirname(__DIR__) . '/Fixtures/ArticleFixtures.yaml'
             ]
-
-        ); // charge des fixtures en yaml pour tester la contrainte unique
+        );
 
         $article = $this->getArticle()
-            ->setTitle('titre de test');
+            ->setTitle('Article de test');
 
         $this->expectException(UniqueConstraintViolationException::class);
 
         $this->persistData($article, $article->getUser());
-
     }
 }

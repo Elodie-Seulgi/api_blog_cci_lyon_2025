@@ -2,17 +2,21 @@
 
 namespace App\Controller\Admin;
 
+use App\Dto\Article\CreateArticleDto;
+use App\Dto\Article\UpdateArticleDto;
+use App\Dto\Filter\ArticleFilterDto;
 use App\Entity\Article;
+use App\Mapper\ArticleMapper;
 use App\Repository\ArticleRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Dto\User\UpdateArticleByAdminDto;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints\Image;
 
 #[Route('/api/admin/articles', name: 'api_admin_articles_')]
@@ -20,57 +24,57 @@ class ArticleController extends AbstractController
 {
     public function __construct(
         private ArticleRepository $articleRepository,
-        private readonly EntityManagerInterface $em
-
+        private EntityManagerInterface $em,
+        private readonly ArticleMapper $articleMapper,
     ) {
     }
 
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(): JsonResponse
-    {
+    public function index(
+        #[MapQueryString]
+        ArticleFilterDto $articleFilterDto
+    ): JsonResponse {
         return $this->json(
-            $this->articleRepository->findAll(),
+            $this->articleRepository->findPaginate($articleFilterDto),
             Response::HTTP_OK,
             context: ['groups' => ['common:index', 'articles:index', 'articles:show']]
         );
-
     }
 
-    //    //create
-    // #[Route('', name: 'create', methods: ['POST'])]
-    // public function create()
+    #[Route('', name: 'create', methods: ['POST'])]
+    public function create(
+        #[MapRequestPayload]
+        CreateArticleDto $dto,
+    ): JsonResponse {
+        $article = $this->articleMapper->map($dto);
 
+        $this->em->persist($article);
+        $this->em->flush();
 
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
-    public function show(Article $article): JsonResponse
-    {
+        return $this->json(
+            ['id' => $article->getId()],
+            Response::HTTP_CREATED,
+        );
+    }
+
+    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
+    public function update(
+        Article $article,
+        #[MapRequestPayload]
+        UpdateArticleDto $dto,
+    ): JsonResponse {
+        $this->articleMapper->map($dto, $article);
+
+        $this->em->flush();
+
         return $this->json(
             $article,
             Response::HTTP_OK,
-            context: ['groups' => ['common:index', 'articles:index', 'articles:show']]
+            context: [
+                'groups' => ['common:index', 'articles:index', 'articles:show']
+            ]
         );
     }
-
-
-
-
-    //! update
-    // #[Route('/{id}', name: 'update', methods: ['PATCH'])]
-    // public function update(
-    //     Article $article,
-    //     #[MapRequestPayload]
-    //     UpdateArticleByAdminDto $dto,
-    // ): JsonResponse {
-    //     $this->articleMapper->map($dto, $article);
-
-    //     $this->em->flush();
-
-    //     return $this->json(
-    //         $article,
-    //         Response::HTTP_OK,
-    //         context: ['groups' => ['common:index', 'articles:index', 'articles:show']]
-    //     );
-    // }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(Article $article): JsonResponse
@@ -99,9 +103,8 @@ class ArticleController extends AbstractController
                     'image/svg+xml',
                     'image/jpg',
                     'image/avif',
-
                 ],
-                mimeTypesMessage: 'Please upload a valid image (jpeg, png, gif, webp, svg, jpg, avif).',
+                mimeTypesMessage: 'The file must be an image (jpeg, png, gif, webp, svg, jpg, avif).',
                 detectCorrupted: true,
             )
         )]
@@ -112,13 +115,8 @@ class ArticleController extends AbstractController
         $this->em->flush();
 
         return $this->json(
-            $article,
-            Response::HTTP_OK,
-            context: ['groups' => ['common:index', 'articles:index', 'articles:show']]
+            null,
+            Response::HTTP_NO_CONTENT,
         );
     }
-
 }
-
-
-

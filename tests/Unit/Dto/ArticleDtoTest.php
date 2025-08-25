@@ -87,7 +87,7 @@ class ArticleDtoTest extends KernelTestCase
     {
         return [
             'no unique' => [
-                'title' => 'titre de test',
+                'title' => 'Article de test',
                 'expectedErrors' => [
                     'property' => 'title',
                     'code' => self::UNIQUE_ERROR_CODE

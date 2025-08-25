@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Dto\Interfaces;
 
@@ -10,7 +10,7 @@ interface ArticleRequestInterface
 
     public function getShortContent(): ?string;
 
-    public function isEnable(): ?bool;
+    public function isEnabled(): bool;
 
     public function getUser(): ?int;
 }
