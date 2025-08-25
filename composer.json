@@ -1,6 +1,6 @@
 {
-    "name": "symfony/skeleton",
-    "description": "Skeleton application for Symfony projects",
+    "name": "symfony/elodie",
+    "description": "elodie application for Symfony projects",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
